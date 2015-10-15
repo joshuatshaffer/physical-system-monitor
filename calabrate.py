@@ -8,12 +8,23 @@ import serial
 
 arduino_port_name = '/dev/tty.usbmodemfd141'
 
+full = 'xFFFFFFFFFFFFFFFFFF'
+half = 'x808080808080808080'
+zero = 'x000000000000000000'
+
+
 def main():
+    """:rtype : void"""
     ser = serial.Serial(arduino_port_name, 9600)
     time.sleep(2)
-    out_put = 'x{0:02X}y{1:02X}'.format(255, 255)
-    ser.write(out_put)
-    time.sleep(1000)
+    while True:
+        ser.write(full)
+        time.sleep(5)
+        ser.write(half)
+        time.sleep(5)
+        ser.write(zero)
+        time.sleep(5)
+
 
 if __name__ == '__main__':
     sys.exit(main())
