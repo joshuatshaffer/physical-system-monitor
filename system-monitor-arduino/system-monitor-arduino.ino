@@ -33,16 +33,16 @@ void loop() {
   if (Serial.available() > 18) {
     c = Serial.read();
     if (c == 'x') {
+      if (get_num(this_n)) {
+        analogWrite(memory_pin, this_n);
+      }
+      
       for (int i=0; i<8; ++i) {
         if (get_num(this_n)) {
           indicators[i].set(this_n);
         } else {
           break;
         }
-      }
-      
-      if (get_num(this_n)) {
-        analogWrite(memory_pin, this_n);
       }
       
       av = 0;
