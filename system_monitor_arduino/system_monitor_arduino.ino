@@ -18,7 +18,7 @@ int c, this_n, av;
 long now;
 
 void loop() {
-  if (Serial.available() > 18) {
+  if (Serial.available() > 20) {
     c = Serial.read();
     if (c == 'x') {
       if (get_num(this_n)) {
@@ -31,6 +31,10 @@ void loop() {
         } else {
           break;
         }
+      }
+      
+      if (get_num(this_n)) {
+        analogWrite(av_cpu_pin, this_n);
       }
     }
   }

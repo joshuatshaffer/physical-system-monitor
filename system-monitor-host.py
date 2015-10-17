@@ -22,7 +22,7 @@ def gen_antilog():
 
 def gen_lin():
     lookup = []
-    delta = 255 / 256.0
+    delta = 255 / 256.0 / 2.55
     for x in range(1, 257):
         lookup.append(x * delta)
     return lookup
@@ -49,8 +49,11 @@ def transform_lin(x):
 def updateInfos(ser):
     x = psutil.virtual_memory().percent
     out_put = 'x'+transform_lin(x)
+    av = 0
     for x in psutil.cpu_percent(percpu=True):
         out_put += transform_antilog(x)
+        av += x
+    out_put += transform_lin(av / 8.0)
     print(out_put)  # for debugging
     ser.write(out_put)
 
