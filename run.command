@@ -7,4 +7,4 @@
 # Warning, spaces and such are not escaped.
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-python "$DIR/systinfo_to_serial.py"
+python "$DIR/system-monitor-host.py"
