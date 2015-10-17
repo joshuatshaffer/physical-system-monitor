@@ -9,7 +9,7 @@ import serial
 arduino_port_name = '/dev/tty.usbmodemfd141'
 
 full = 'xFFFFFFFFFFFFFFFFFF'
-half = 'x808080808080808080'
+half = 'x161616161616161616'
 zero = 'x000000000000000000'
 
 
