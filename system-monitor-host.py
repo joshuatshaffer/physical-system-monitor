@@ -10,50 +10,37 @@ import math
 arduino_port_name = '/dev/tty.usbmodemfd141'
 baud_rate = 9600
 
-
-def gen_antilog():
-    lookup = []
-    delta = 255 / 256.0
-    base = math.pow(2, 2 / 25.0)
-    for x in range(1, 257):
-        lookup.append(math.log(x * delta + 1, base))
-    return lookup
+led_gamma = 2.2
 
 
-def gen_lin():
-    lookup = []
-    delta = 255 / 256.0 / 2.55
-    for x in range(1, 257):
-        lookup.append(x * delta)
-    return lookup
+def format_led(x):
+    if x <= 0:
+        return '00'
+    elif x >= 100:
+        return 'FF'
+    else:
+        return '{02X}'.format(int(
+            math.pow(x / 100.0, led_gamma) * 254 + 1
+        ))
 
 
-antilog = gen_antilog()
-lin = gen_lin()
-
-
-def transform_antilog(x):
-    for y,i in zip(antilog, range(0,256)):
-        if (x<y):
-            return '{0:02X}'.format(i)
-    return 'FF'
-
-
-def transform_lin(x):
-    for y,i in zip(lin, range(0,256)):
-        if (x<y):
-            return '{0:02X}'.format(i)
-    return 'FF'
+def format_lin(x):
+    if x <= 0:
+        return '00'
+    elif x >= 100:
+        return 'FF'
+    else:
+        return '{02X}'.format(int(x * 2.55))
 
 
 def updateInfos(ser):
     x = psutil.virtual_memory().percent
-    out_put = 'x'+transform_lin(x)
+    out_put = 'x' + format_lin(x)
     av = 0
     for x in psutil.cpu_percent(percpu=True):
-        out_put += transform_antilog(x)
+        out_put += format_led(x)
         av += x
-    out_put += transform_lin(av / 8.0)
+    out_put += format_lin(av / 8.0)
     print(out_put)  # for debugging
     ser.write(out_put)
 
