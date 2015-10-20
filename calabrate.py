@@ -6,11 +6,19 @@ import time
 
 import serial
 
+from outconv import format_led, format_lin
+
 arduino_port_name = '/dev/tty.usbmodemfd141'
 
-full = 'xFFFFFFFFFFFFFFFFFFFF'
-half = 'x80161616161616161680'
-zero = 'x00000000000000000000'
+
+def format_allsame(x):
+    s = format_lin(x)
+    return 'x' + s + (format_led(x) * 8) + s
+
+
+full = format_allsame(100.0)
+half = format_allsame(50.0)
+zero = format_allsame(0.0)
 
 
 def main():

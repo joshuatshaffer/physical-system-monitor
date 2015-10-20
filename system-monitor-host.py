@@ -5,32 +5,11 @@ import time
 
 import psutil
 import serial
-import math
+
+from outconv import format_led, format_lin
 
 arduino_port_name = '/dev/tty.usbmodemfd141'
 baud_rate = 9600
-
-led_gamma = 2.2
-
-
-def format_led(x):
-    if x <= 0:
-        return '00'
-    elif x >= 100:
-        return 'FF'
-    else:
-        return '{02X}'.format(int(
-            math.pow(x / 100.0, led_gamma) * 254 + 1
-        ))
-
-
-def format_lin(x):
-    if x <= 0:
-        return '00'
-    elif x >= 100:
-        return 'FF'
-    else:
-        return '{02X}'.format(int(x * 2.55))
 
 
 def updateInfos(ser):
