@@ -3,11 +3,15 @@
 
 uint8_t pins[10] = {10, 2,3,4,5, 6,7,8,9, 11};
 
+long sleep_at = 0;
+long sleep_timeout = 5000;
+
 void setup() {
   Serial.begin(9600);
   SoftPWMBegin();
   for (int i=0; i<10; ++i)
     SoftPWMSet(pins[i], 0);
+  sleep_at = millis() + sleep_timeout;
 }
 
 int c, this_n;
@@ -23,6 +27,11 @@ void loop() {
           break;
         }
       }
+      sleep_at = millis() + sleep_timeout;
     }
+  } else if (sleep_at <= millis()) {
+      for (int i=0; i<10; ++i)
+        SoftPWMSet(pins[i], 0);
+      sleep_at = 0x7FFFFFFF;
   }
 }
