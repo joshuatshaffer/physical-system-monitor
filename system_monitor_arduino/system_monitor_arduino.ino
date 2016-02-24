@@ -2,9 +2,6 @@
 #include "Hexinator.h"
 
 const uint8_t pins[10] = {10, 2,3,4,5, 6,7,8,9, 11};
-const long sleep_timeout = 5000;
-
-long sleep_at = 0;
 
 void zero_out_pins() {
   for (int i=0; i<10; ++i)
@@ -12,10 +9,10 @@ void zero_out_pins() {
 }
 
 void setup() {
+  setup_watchdog(9);
   Serial.begin(9600);
   SoftPWMBegin();
   zero_out_pins();
-  sleep_at = millis() + sleep_timeout;
 }
 
 void loop() {
@@ -29,10 +26,7 @@ void loop() {
           break;
         }
       }
-      sleep_at = millis() + sleep_timeout;
+      wdt_reset();
     }
-  } else if (sleep_at <= millis()) {
-      zero_out_pins();
-      sleep_at = 0x7FFFFFFF;
   }
 }

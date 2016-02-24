@@ -1,45 +1,66 @@
-#!/usr/bin/env python
-
-import sys
-import time
-
 import psutil
+
 import serial
+import serial.tools.list_ports
 
-from outconv import format_led, format_lin
+import time
+import math
 
-arduino_port_name = '/dev/tty.usbmodemfd141'
+led_gamma = 2.2
 baud_rate = 9600
 
 
-lastCpus = [0.0] * 8
-slew = 0.2
+def format_led(x):
+    n = int(math.pow(x / 100.0, led_gamma) * 256.0)
+    if n < 0:
+        n = 0
+    elif n > 255:
+        n = 255
+    return '{:02X}'.format(n)
 
 
-def getInfos():
-    global lastCpus
+def format_lin(x):
+    n = int(x * 2.56)
+    if n < 0:
+        n = 0
+    elif n > 255:
+        n = 255
+    return '{:02X}'.format(n)
+
+
+def update_monitor(ser):
     cpus = psutil.cpu_percent(percpu=True)
-    lastCpus = [a*(1-slew) + b*slew for a,b in zip(lastCpus, cpus)]
-    out_info = list(lastCpus)
-    out_info.insert(0, psutil.virtual_memory().percent)
-    out_info.append(sum(cpus)/len(cpus))
-    return out_info
-
-
-def updateInfos(ser):
-    infos = getInfos()
-    out_put = 'x%s%s%s' % (format_lin(infos[0]), "".join([format_led(x) for x in infos[1:-1]]), format_lin(infos[-1]))
+    ram = psutil.virtual_memory().percent
+    tcpu = sum(cpus)/len(cpus)
+    out_put = 'x%s%s%s' % (format_lin(ram), "".join([format_led(x) for x in cpus]), format_lin(tcpu))
     print(out_put)  # for debugging
     ser.write(out_put)
 
 
-def main():
-    ser = serial.Serial(arduino_port_name, baud_rate)
-    print("we have connected")
-    time.sleep(2)
-    while True:
-        updateInfos(ser)
-        time.sleep(0.05)
+def find_and_run_monitor():
+    print("Looking for ports...")
+    ports = list(serial.tools.list_ports.comports())
+    for p in ports:
+        print(p)
+        if "Arduino" in p[1]:
+            print("Found arduino at %s. Connecting..." % p[0])
+            ser = serial.Serial(port=p[0], baudrate=baud_rate)
+            print("Connected. Streaming data.")
+            while True:
+                update_monitor(ser)
+                time.sleep(0.1)
+    print("Did not find arduino.")
 
-if __name__ == '__main__':
-    sys.exit(main())
+
+def main():
+    while True:
+        try:
+            find_and_run_monitor()
+        except serial.SerialException as e:
+            print(e)
+        except BaseException as e:
+            print(e)
+        time.sleep(2)
+
+
+main()
