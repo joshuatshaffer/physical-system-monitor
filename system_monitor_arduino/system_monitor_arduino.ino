@@ -1,6 +1,8 @@
 #include "SoftPWM.h"
 #include "Hexinator.h"
 
+#include <avr/wdt.h>
+
 const uint8_t pins[10] = {10, 2,3,4,5, 6,7,8,9, 11};
 
 void zero_out_pins() {
@@ -9,7 +11,7 @@ void zero_out_pins() {
 }
 
 void setup() {
-  setup_watchdog(9);
+  wdt_enable(WDTO_1S);
   Serial.begin(9600);
   SoftPWMBegin();
   zero_out_pins();

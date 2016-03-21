@@ -1,14 +1,14 @@
 import psutil
-
 import serial
-import serial.tools.list_ports
 
 import time
 import math
 
 led_gamma = 2.2
+port_name = '/dev/tty.usbmodemFA131'
 baud_rate = 9600
 
+lcpu = 0
 
 def format_led(x):
     n = int(math.pow(x / 100.0, led_gamma) * 256.0)
@@ -37,27 +37,14 @@ def update_monitor(ser):
     ser.write(out_put)
 
 
-def find_and_run_monitor():
-    print("Looking for ports...")
-    ports = list(serial.tools.list_ports.comports())
-    for p in ports:
-        print(p)
-        if "Arduino" in p[1]:
-            print("Found arduino at %s. Connecting..." % p[0])
-            ser = serial.Serial(port=p[0], baudrate=baud_rate)
+def main():
+    while True:
+        try:
+            ser = serial.Serial(port_name, baud_rate)
             print("Connected. Streaming data.")
             while True:
                 update_monitor(ser)
                 time.sleep(0.1)
-    print("Did not find arduino.")
-
-
-def main():
-    while True:
-        try:
-            find_and_run_monitor()
-        except serial.SerialException as e:
-            print(e)
         except BaseException as e:
             print(e)
         time.sleep(2)
