@@ -6,13 +6,14 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$DIR"
 
-PLACE=~/Applications/pysical_system_monitor
+installLocation=~/Applications/Physical\ System\ Monitor
 
-rm -rf $PLACE
+#Uninstall existing version
+rm -rf "$installLocation"
 
-mkdir $PLACE
-cp -r start_psm.app $PLACE/start_pysical_system_monitor.app
-cp -r stop_psm.app $PLACE/stop_pysical_system_monitor.app
-mkdir $PLACE/res
-cp system_monitor_host.py $PLACE/res/system_monitor_host.py
-cp daemon3x.py $PLACE/res/daemon3x.py
+#Install new version
+mkdir -p "$installLocation"/res
+cp -r start_psm.app "$installLocation"/Start\ Physical\ System\ Monitor.app
+cp -r stop_psm.app "$installLocation"/Stop\ Physical\ System\ Monitor.app
+cp system_monitor_host.py "$installLocation"/res/system_monitor_host.py
+cp daemon3x.py "$installLocation"/res/daemon3x.py
