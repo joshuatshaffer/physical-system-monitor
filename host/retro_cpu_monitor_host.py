@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+# using python version 2.7
 import psutil # v3.2.2 by Giampaolo Rodola
 import serial # v2.7 by Chris Liechti
 
@@ -12,7 +12,7 @@ port_name = '/dev/tty.wchusbserial1420'
 baud_rate = 9600
 pid_file = '/tmp/retro-cpu-monitor.pid'
 
-
+        
 def format_led(x):
     n = int(math.pow(x / 100.0, led_gamma) * 256.0)
     if n < 0:
@@ -33,7 +33,7 @@ def format_lin(x):
 
 def main_loop():
     ser = serial.Serial(port_name, baud_rate)
-    print("Connected. Streaming data.")
+    print("Connected to: {}\nStreaming data...".format(port_name))
     while True:
         cpus = psutil.cpu_percent(percpu=True)
         ram = psutil.virtual_memory().percent
@@ -47,7 +47,7 @@ def main_loop():
 
 def test_loop():
     ser = serial.Serial(port_name, baud_rate)
-    print("Connected. Streaming data.")
+    print("Connected to: {}\nStreaming data...".format(port_name))
     t = 1
     i = 0
     while True:
@@ -85,13 +85,30 @@ def test_loop():
         ser.write(out_put)
         time.sleep(0.1)
 
+        
+def main(testing):
+    while True:
+        try:
+            if testing:
+                test_loop()
+            else:
+                main_loop()
+        except KeyboardInterrupt:
+            # allow the user to interrupt
+            print("Goodbye.")
+            sys.exit(0)
+        except Exception,e:
+            print(e)
+        time.sleep(1)
+        print("Retrying...")
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
-            main_loop()
+            main(testing=False)
         elif 'test' == sys.argv[1]:
-            test_loop()
+            main(testing=True)
         else:
             print("Unknown command")
             sys.exit(2)
