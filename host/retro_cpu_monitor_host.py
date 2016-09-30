@@ -89,20 +89,24 @@ def test_loop():
 
         
 def main(testing):
-    while True:
-        try:
-            if testing:
-                test_loop()
-            else:
-                main_loop()
-        except KeyboardInterrupt:
-            # allow the user to interrupt
-            print("Goodbye.")
-            sys.exit(0)
-        except Exception,e:
-            print(e)
-        time.sleep(1)
-        print("Retrying...")
+    try:
+        while True:
+            try:
+                if testing:
+                    test_loop()
+                else:
+                    main_loop()
+            except KeyboardInterrupt as e:
+                raise
+            except Exception,e:
+                print(e)
+            time.sleep(1)
+            print("Retrying...")
+    except KeyboardInterrupt:
+        # allow the user to interrupt
+        print("Goodbye.")
+        sys.exit(0)
+        
 
         
 # ----- Daemon Stuff - based on "A simple unix/linux daemon in Python" by Sander Marechal -----
