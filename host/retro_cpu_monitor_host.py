@@ -6,13 +6,13 @@ import serial # v2.7 by Chris Liechti
 import atexit, math, os, signal, sys, time
 
 led_gamma = 2.2
-port_name = '/dev/tty.wchusbserial1420'
+port_name = '/dev/tty.wchusbserialfa130'
 baud_rate = 9600
 pid_file = '/tmp/retro-cpu-monitor.pid'
 
         
 def format_led(x):
-    n = int(math.pow(x / 100.0, led_gamma) * 256.0)
+    n = int(math.pow(x / 100.0, led_gamma) * 255.0) + 1
     if n < 0:
         n = 0
     elif n > 255:
@@ -36,7 +36,7 @@ def main_loop():
         cpus = psutil.cpu_percent(percpu=True)
         ram = psutil.virtual_memory().percent
         tcpu = sum(cpus) / len(cpus)
-        cpus = cpus + list(reversed(cpus)) # for testing on computer with 4 logical cores in sted of 8
+        #cpus = cpus + list(reversed(cpus)) # for testing on computer with 4 logical cores in sted of 8
         out_put = 'x' + format_lin(ram) + "".join(map(format_led, cpus)) + format_lin(tcpu)
         print(out_put)  # for debugging
         ser.write(out_put)
@@ -50,12 +50,16 @@ def test_loop():
     i = 0
     while True:
         # make triangle wave
+        a = 0.3
+        b = 1.0 - a
         if t >= 1 or t <= 0:
             x = 0
-        elif t > 0.5:
-            x = 200.0 - t * 200.0
+        elif t < a:
+            x = t * (100.0 / a)
+        elif t > b:
+            x = (100.0 + b * 100.0 / (1-b)) - t * (100.0 / (1-b))
         else:
-            x = t * 200.0
+            x = 100
 
         linx = format_lin(x)
         lin0 = format_lin(0)
