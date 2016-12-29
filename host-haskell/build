@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd $(dirname $0)
+
+echo "--- building host-haskell ---"
+cabal sandbox init
+cabal --require-sandbox install -j
+echo "--- done building ---"

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd $(dirname $0)
+
+echo "--- cleaning up host-haskell ---"
+rm -v cabal.sandbox.config*
+rm -rfv dist
+rm -rfv .cabal-sandbox
+echo "--- done cleaning ---"

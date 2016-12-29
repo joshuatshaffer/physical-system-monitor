@@ -1,2 +1,5 @@
 readme.html
 bookmarks.html
+host-haskell/dist/*
+host-haskell/cabal.sandbox.config
+host-haskell/.cabal-sandbox/*
