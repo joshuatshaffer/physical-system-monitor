@@ -1,53 +1,51 @@
 module Main where
-import Data.List (isPrefixOf, intercalate)
-import Control.Concurrent (threadDelay)
-import System.IO
-import Text.Printf
+import           Control.Arrow      ((&&&))
+import           Control.Concurrent (threadDelay)
+import           Data.List          (intercalate, isPrefixOf, genericIndex)
+import           System.IO          (hFlush, stdout)
+
+mapT :: (a -> b) -> (a, a) -> [b]
+mapT f (a, b) = [f a, f b]
 
 cpuTimesFieldNames :: [String]
 cpuTimesFieldNames = ["user", "nice", "system", "idle", "iowait",
                       "irq", "softirq", "steal", "guest", "guest_nice"]
 
-getCpuTimes :: IO [[Integer]]
+getCpuTimes :: IO [(Integer, Integer)]
 getCpuTimes = do s <- readFile "/proc/stat"
                  return $! parceCpuTimes s
   where
-    parceCpuTimes :: String -> [[Integer]]
-    parceCpuTimes = map (map read . tail . words) . takeWhile (isPrefixOf "cpu") . lines
+    parceCpuTimes :: String -> [(Integer, Integer)]
+    parceCpuTimes = map parceCpuLine . takeWhile (isPrefixOf "cpu") . lines
 
-cpuTimeTot :: [Integer] -> Integer
-cpuTimeTot = sum . take 8
+    parceCpuLine :: String -> (Integer, Integer)
+    parceCpuLine = (cpuTimeBusy &&& cpuTimeTot) . map read . tail . words
 
-cpuTimeBusy :: [Integer] -> Integer
-cpuTimeBusy ts = sum $ take 3 ts ++ take 3 (drop 5 ts)
+    cpuTimeTot :: [Integer] -> Integer
+    cpuTimeTot = sum . take 8
 
-castDiv :: Fractional a => Integer -> Integer -> a
-castDiv a b = fromInteger a / fromInteger b
+    cpuTimeBusy :: [Integer] -> Integer
+    cpuTimeBusy ts = sum $ take 3 ts ++ take 3 (drop 5 ts)
 
-cpuPercentLoad :: Fractional a => [Integer] -> a
-cpuPercentLoad ts = castDiv bus tot
+levelsMessage :: [(Integer, Integer)] -> [(Integer, Integer)] -> String
+levelsMessage is fs = 'x' : concat (zipWith (\i f -> byte2Hex $ percentByte i f) is fs)
   where
-    tot = cpuTimeTot ts
-    bus = cpuTimeBusy ts
+    percentByte :: (Integer, Integer) -> (Integer, Integer) -> Integer
+    percentByte i f = (fst f - fst i) * 255 `quot` (snd f - snd i)
 
-fader :: Fractional a => [[Integer]] -> [[Integer]] -> [a]
-fader = zipWith (\i f -> cpuPercentLoad $ zipWith (-) f i)
+    byte2Hex :: Integer -> String
+    byte2Hex n = mapT (genericIndex "0123456789ABCDEF") $ quotRem n 16
 
-snaz :: RealFloat a => a -> String
-snaz x = ad $ show $ castDiv (floor (x * 10)) 10
-  where ad xs = replicate (5 - length xs) ' '  ++ xs
-
-loop :: [[Integer]] -> IO ()
-loop lastCpuTimes = do
-  threadDelay 1000000
+mainLoop :: [(Integer, Integer)] -> IO ()
+mainLoop lastTimes = do
+  threadDelay 100000
   times <- getCpuTimes
   putChar '\r'
-  putStr $ intercalate ", " $ map (snaz . (*100)) $ fader times lastCpuTimes
+  putStr $ levelsMessage times lastTimes
   hFlush stdout
-  loop times
+  mainLoop times
 
 main :: IO ()
 main = do
-  --readFile "/proc/stat" >>= putStr
-  times1 <- getCpuTimes
-  loop times1
+  times <- getCpuTimes
+  mainLoop times
