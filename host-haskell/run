@@ -2,4 +2,4 @@
 
 cd $(dirname $0)
 
-./.cabal-sandbox/bin/host-haskell
+./.cabal-sandbox/bin/host-haskell test /dev/ttyUSB0

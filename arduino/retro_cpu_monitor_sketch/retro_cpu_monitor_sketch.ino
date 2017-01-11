@@ -2,7 +2,9 @@
 
 #include <avr/wdt.h>
 
-const uint8_t pins[10] = {10, 2,3,4,5, 6,7,8,9, 11};
+const int num_pins = 6;
+const uint8_t pins[num_pins] = {6, 2,3,4,5, 7};
+int levels[num_pins];
 
 boolean input_error = false;
 
@@ -29,7 +31,7 @@ int digitVal (const int& d) {
 }
 
 void zero_out_pins() {
-  for (int i=0; i<10; ++i)
+  for (int i=0; i<num_pins; ++i)
     SoftPWMSet(pins[i], 0);
 }
 
@@ -41,15 +43,23 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.available() > 20) {
+  if (Serial.available() > num_pins * 2) {
     if ('x' == Serial.read()) {
-      for (int i=0; i<10; ++i) {
+      
+      // read the update
+      for (int i=0; i<num_pins; ++i) {
         int num = digitVal(Serial.read()) * 16
                 + digitVal(Serial.read());
         if (input_error)
           return;
-        SoftPWMSet(pins[i], num);
+        levels[i] = num;
       }
+      
+      // write the new levels
+      for (int i=0; i<num_pins; ++i) {
+        SoftPWMSet(pins[i], levels[i]);
+      }
+      
       wdt_reset();
     }
   }
